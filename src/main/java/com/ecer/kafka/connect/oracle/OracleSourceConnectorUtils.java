@@ -357,6 +357,18 @@ public class OracleSourceConnectorUtils{
           }
         }
 
+        // Columns that are not in the supplemental logs (like LOBs) will not show up in the "beforeDataMap", so even if
+        // their values are in the "dataMap" (because their value was being updated) they wouldn't show up yet in the
+        // "dataStruct" above. Therefore, loop through the "dataMap" columns and update the "dataStruct" with those
+        // values.
+        if (operation.equals(OPERATION_UPDATE)){
+          for (String col : dataMap.keySet()) {
+            String keyTabCol = owner + "." + tableName + "." + col;
+            String value = dataMap.get(col);
+            dataStruct.put(col, value.equals(NULL_FIELD) ? null:reSetValue(value, tabColsMap.get(keyTabCol).getColumnSchema()));
+          }
+        }
+
         if (operation.equals(OPERATION_INSERT)){
           for (String col : dataMap.keySet()){
             String value = dataMap.get(col);
